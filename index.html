@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>袁天罡稱骨算命</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #FFF9F5;
+    font-family: 'Microsoft JhengHei', '微軟正黑體', sans-serif;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  .wrap { max-width: 460px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 20px; }
+  .header .icon { font-size: 36px; }
+  .header h1 { font-size: 20px; font-weight: bold; color: #FF6B6B; margin: 4px 0 2px; }
+  .header p { font-size: 12px; color: #bbb; }
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    margin-bottom: 14px;
+  }
+  .label { font-size: 12px; color: #999; display: block; margin-bottom: 5px; }
+  .row-2 { display: flex; gap: 10px; margin-bottom: 14px; }
+  .row-2 > div { flex: 1; }
+  .mb14 { margin-bottom: 14px; }
+  .gender-row { display: flex; gap: 8px; }
+  .gender-btn {
+    flex: 1; padding: 9px; border-radius: 10px; border: none; cursor: pointer;
+    background: #F5F5F5; color: #888; font-weight: bold; font-size: 14px;
+    font-family: inherit; transition: all .2s;
+  }
+  .gender-btn.active-f { background: #FF6B6B; color: #fff; }
+  .gender-btn.active-m { background: #4ECDC4; color: #fff; }
+  select {
+    width: 100%; padding: 9px 14px; border-radius: 10px;
+    border: 1.5px solid #FFD6CC; background: #fff; font-size: 15px;
+    color: #333; outline: none; cursor: pointer; font-family: inherit;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23FF6B6B' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+    padding-right: 36px;
+  }
+  .shichen-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    margin-bottom: 18px;
+  }
+  .sc-btn {
+    padding: 7px 2px; border-radius: 9px; border: none; cursor: pointer;
+    background: #F5F5F5; color: #555; font-family: inherit;
+    font-size: 11px; line-height: 1.5; transition: all .2s; text-align: center;
+  }
+  .sc-btn.active { background: #FF6B6B; color: #fff; }
+  .sc-btn .sc-name { font-weight: bold; }
+  .sc-btn .sc-range { font-size: 9px; opacity: .8; }
+  .err { color: #FF6B6B; font-size: 13px; margin-bottom: 10px; }
+  .calc-btn {
+    width: 100%; padding: 13px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    color: #fff; font-size: 16px; font-weight: bold;
+    cursor: pointer; font-family: inherit; letter-spacing: 2px;
+  }
+  .calc-btn:hover { opacity: .92; }
+  .result-hero {
+    background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+    border-radius: 18px; padding: 22px; text-align: center;
+    margin-bottom: 14px; color: #fff;
+  }
+  .result-hero .sub { font-size: 12px; opacity: .85; margin-bottom: 4px; }
+  .result-hero .big { font-size: 48px; font-weight: bold; letter-spacing: 2px; line-height: 1.1; }
+  .result-hero .tag { font-size: 13px; opacity: .85; margin-top: 4px; }
+  .detail-row {
+    display: flex; justify-content: space-between;
+    padding: 7px 0; border-bottom: 1px solid #F5F5F5;
+  }
+  .detail-row:last-child { border-bottom: none; padding-top: 9px; }
+  .detail-lbl { color: #666; font-size: 13px; }
+  .detail-val { color: #FF6B6B; font-weight: bold; font-size: 13px; }
+  .detail-total-lbl { font-weight: bold; color: #333; font-size: 14px; }
+  .detail-total-val { font-weight: bold; color: #FF6B6B; font-size: 15px; }
+  .poem-box {
+    background: #FFF5F3; border-radius: 10px; padding: 14px;
+    border-left: 4px solid #FF6B6B;
+  }
+  .poem-box p { font-size: 14px; line-height: 2; color: #333; letter-spacing: 1px; }
+  .expl {
+    font-size: 13px; line-height: 1.9; color: #444; white-space: pre-wrap;
+  }
+  .loading { text-align: center; padding: 28px; color: #aaa; }
+  .loading .spin { font-size: 26px; margin-bottom: 6px; }
+  .loading p { font-size: 13px; }
+  .card h3 { margin: 0 0 10px; font-size: 14px; color: #444; }
+  .footer { text-align: center; font-size: 10px; color: #ccc; margin-top: 6px; }
+  #result-section { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="icon">🦴</div>
+    <h1>袁天罡稱骨算命</h1>
+    <p>輸入生辰，推算骨格命運</p>
+  </div>
+
+  <div class="card">
+    <!-- 性別 -->
+    <div class="mb14">
+      <span class="label">性別</span>
+      <div class="gender-row">
+        <button class="gender-btn active-f" id="btn-f" onclick="setGender('female')">女命 ♀</button>
+        <button class="gender-btn" id="btn-m" onclick="setGender('male')">男命 ♂</button>
+      </div>
+    </div>
+
+    <!-- 年份 -->
+    <div class="mb14">
+      <span class="label">出生年（農曆）</span>
+      <select id="sel-year"></select>
+    </div>
+
+    <!-- 月日 -->
+    <div class="row-2">
+      <div>
+        <span class="label">農曆月份</span>
+        <select id="sel-month"></select>
+      </div>
+      <div>
+        <span class="label">農曆日期</span>
+        <select id="sel-day"></select>
+      </div>
+    </div>
+
+    <!-- 時辰 -->
+    <span class="label">出生時辰</span>
+    <div class="shichen-grid" id="shichen-grid"></div>
+
+    <div class="err" id="err-msg" style="display:none"></div>
+    <button class="calc-btn" onclick="calc()">✨ 開始算命</button>
+  </div>
+
+  <!-- 結果區 -->
+  <div id="result-section">
+    <div class="result-hero">
+      <div class="sub" id="r-meta"></div>
+      <div class="big" id="r-total"></div>
+      <div class="tag">骨格總重</div>
+    </div>
+
+    <div class="card">
+      <h3>📊 計算明細</h3>
+      <div id="r-detail"></div>
+    </div>
+
+    <div class="card">
+      <h3>📜 袁天罡原文</h3>
+      <div class="poem-box"><p id="r-poem"></p></div>
+    </div>
+
+    <div class="card" style="margin-bottom:8px">
+      <h3>🌿 現代白話解說</h3>
+      <div id="r-expl">
+        <div class="loading"><div class="spin">⏳</div><p>命理師解讀中...</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">僅供娛樂參考，不構成任何決策建議</div>
+</div>
+
+<script>
+// ── 資料表 ──────────────────────────────────────────
+const CHUN_JIE = {
+  1950:[1,17,6,2],1951:[2,6,7,3],1952:[1,27,8,4],1953:[2,14,9,5],1954:[2,3,0,6],
+  1955:[1,24,1,7],1956:[2,12,2,8],1957:[1,31,3,9],1958:[2,18,4,10],1959:[2,8,5,11],
+  1960:[1,28,6,0],1961:[2,15,7,1],1962:[2,5,8,2],1963:[1,25,9,3],1964:[2,13,0,4],
+  1965:[2,2,1,5],1966:[1,21,2,6],1967:[2,9,3,7],1968:[1,30,4,8],1969:[2,17,5,9],
+  1970:[2,6,6,10],1971:[1,27,7,11],1972:[2,15,8,0],1973:[2,3,9,1],1974:[1,23,0,2],
+  1975:[2,11,1,3],1976:[1,31,2,4],1977:[2,18,3,5],1978:[2,7,4,6],1979:[1,28,5,7],
+  1980:[2,16,6,8],1981:[2,5,7,9],1982:[1,25,8,10],1983:[2,13,9,11],1984:[2,2,0,0],
+  1985:[2,20,1,1],1986:[2,9,2,2],1987:[1,29,3,3],1988:[2,17,4,4],1989:[2,6,5,5],
+  1990:[1,27,6,6],1991:[2,15,7,7],1992:[2,4,8,8],1993:[1,23,9,9],1994:[2,10,0,10],
+  1995:[1,31,1,11],1996:[2,19,2,0],1997:[2,7,3,1],1998:[1,28,4,2],1999:[2,16,5,3],
+  2000:[2,5,6,4],2001:[1,24,7,5],2002:[2,12,8,6],2003:[2,1,9,7],2004:[1,22,0,8],
+  2005:[2,9,1,9],2006:[1,29,2,10],2007:[2,18,3,11],2008:[2,7,4,0],2009:[1,26,5,1],
+  2010:[2,14,6,2],2011:[2,3,7,3],2012:[1,23,8,4],2013:[2,10,9,5],2014:[1,31,0,6],
+  2015:[2,19,1,7],2016:[2,8,2,8],2017:[1,28,3,9],2018:[2,16,4,10],2019:[2,5,5,11],
+  2020:[1,25,6,0],2021:[2,12,7,1],2022:[2,1,8,2],2023:[1,22,9,3],2024:[2,10,0,4],
+  2025:[1,29,1,5],2026:[2,17,2,6],2027:[2,6,3,7],2028:[1,26,4,8],2029:[2,13,5,9],
+};
+const TG=["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+const DZ=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+function getGZ(y){const c=CHUN_JIE[y];if(!c)return null;return TG[c[2]]+DZ[c[3]];}
+
+const YW={"甲子":12,"乙丑":9,"丙寅":6,"丁卯":7,"戊辰":12,"己巳":5,"庚午":9,"辛未":8,"壬申":7,"癸酉":8,"甲戌":15,"乙亥":9,"丙子":16,"丁丑":8,"戊寅":8,"己卯":19,"庚辰":12,"辛巳":6,"壬午":8,"癸未":7,"甲申":5,"乙酉":15,"丙戌":6,"丁亥":16,"戊子":15,"己丑":7,"庚寅":9,"辛卯":12,"壬辰":10,"癸巳":7,"甲午":15,"乙未":6,"丙申":5,"丁酉":14,"戊戌":14,"己亥":9,"庚子":7,"辛丑":7,"壬寅":9,"癸卯":12,"甲辰":8,"乙巳":7,"丙午":13,"丁未":5,"戊申":14,"己酉":5,"庚戌":9,"辛亥":17,"壬子":5,"癸丑":7,"甲寅":12,"乙卯":8,"丙辰":8,"丁巳":6,"戊午":19,"己未":6,"庚申":8,"辛酉":16,"壬戌":10,"癸亥":7};
+const MW={1:6,2:7,3:18,4:9,5:5,6:16,7:9,8:15,9:18,10:8,11:9,12:5};
+const DW={1:5,2:10,3:8,4:15,5:16,6:15,7:8,8:16,9:8,10:16,11:9,12:17,13:8,14:17,15:10,16:8,17:9,18:18,19:5,20:15,21:10,22:9,23:8,24:9,25:15,26:18,27:7,28:8,29:16,30:6};
+const HW={"子":16,"丑":6,"寅":7,"卯":10,"辰":9,"巳":16,"午":10,"未":8,"申":8,"酉":9,"戌":6,"亥":6};
+const SHICHEN=[
+  {n:"子時",r:"23:00–00:59",d:"子"},{n:"丑時",r:"01:00–02:59",d:"丑"},
+  {n:"寅時",r:"03:00–04:59",d:"寅"},{n:"卯時",r:"05:00–06:59",d:"卯"},
+  {n:"辰時",r:"07:00–08:59",d:"辰"},{n:"巳時",r:"09:00–10:59",d:"巳"},
+  {n:"午時",r:"11:00–12:59",d:"午"},{n:"未時",r:"13:00–14:59",d:"未"},
+  {n:"申時",r:"15:00–16:59",d:"申"},{n:"酉時",r:"17:00–18:59",d:"酉"},
+  {n:"戌時",r:"19:00–20:59",d:"戌"},{n:"亥時",r:"21:00–22:59",d:"亥"}
+];
+const MALE={"2.1":"短命非業謂大空，平生災難事重重；凶禍頻臨陷逆境，終世困苦事不成。","2.2":"身寒骨冷苦伶仃，此命推來行乞人；勞勞碌碌無度日，終年打拱過平生。","2.3":"此命推來骨格輕，求謀作事事難成；妻兒兄弟應難許，別處他鄉作散人。","2.4":"此命推來福祿無，門庭困苦總難榮；六親骨肉皆無靠，流浪他鄉作老翁。","2.5":"此命推來祖業微，門庭營度似稀奇；六親骨肉如冰炭，一世勤勞自把持。","2.6":"平生衣祿苦中求，獨自營謀事不休；離祖出門宜早計，晚來衣祿自無休。","2.7":"一生作事少商量，難靠祖宗作主張；獨馬單槍空做去，早年晚歲總無長。","2.8":"一生行事似飄蓬，祖宗產業在夢中；若不過房改名姓，也當移徒二三通。","2.9":"初年運限未曾亨，縱有功名在後成；須過四旬才可立，移居改姓始為良。","3.0":"勞勞碌碌苦中求，東奔西走何日休；若使終身勤與儉，老來稍可免憂愁。","3.1":"忙忙碌碌苦中求，何日雲開見日頭；難得祖基家可立，中年衣食漸無憂。","3.2":"初年運蹇事難謀，漸有財源如水流；到得中年衣食旺，那時名利一齊收。","3.3":"早年做事事難成，百年勤勞枉費心；半世惹呼起多怨，老來卻交好運人。","3.4":"此命福氣果如何，僧道門中衣祿多；離祖出家方為妙，朝晚拜佛念彌陀。","3.5":"生平福量不周全，祖業根基覺少傳；營事生涯宜守舊，時來衣食勝從前。","3.6":"不須勞碌過平生，獨自成家福不輕；早有福星常照命，任君行去百般成。","3.7":"此命般般事不成，弟兄少力自孤行；雖然祖業須微有，來得明時去不明。","3.8":"一身骨肉最清高，早入簧門姓氏標；待到年將三十六，藍衫脫去換紅袍。","3.9":"此命終身運不通，勞勞作事盡皆空；苦心竭力成家計，到得那時在夢中。","4.0":"平生衣祿是綿長，件件心中自主張；前面風霜多受過，後來必定享安康。","4.1":"此命推來自不同，為人能幹異凡庸；中年還有逍遙福，不比前時運來通。","4.2":"得寬懷處且寬懷，何用雙眉皺不開；若使中年命運濟，那時名利一起來。","4.3":"為人心性最聰明，作事軒昂近貴人；衣祿一生天注定，不須勞碌是豐亨。","4.4":"萬事由天莫苦求，須知福碌賴人修；當年財帛難如意，晚景欣然便不優。","4.5":"名利推求竟若何？前番辛苦後奔波；命中難養男和女，骨肉扶持也不多。","4.6":"東西南北盡皆通，出姓移居更覺隆；衣祿無窮無數定，中年晚景一般同。","4.7":"此命推求旺末年，妻榮子貴自怡然；平生原有滔滔福，可卜財源若水泉。","4.8":"初年運道未曾通，幾許蹉跎命亦窮；兄弟六親無依靠，一生事業晚來整。","4.9":"此命推來福不輕，自成自立顯門庭；從來富貴人欽敬，使婢差奴過一生。","5.0":"為利為名終日勞，中年福祿也多遭；老來自有財星照，不比前番目下高。","5.1":"一世榮華事事通，不須勞碌自亨通；兄弟叔侄皆如意，家業成時福祿宏。","5.2":"一世亨通事事能，不須勞苦自然寧；宗族有光欣喜甚，家產豐盈自稱心。","5.3":"此格推為氣量真，興家發達在其中；一生福祿安排定，卻是人間一富翁。","5.4":"此命推來厚且清，詩書滿腹看功成；豐衣足食自然穩，正是人間有福人。","5.5":"策馬揚鞭爭名利，少年作事費籌論；一朝福祿源源至，富貴榮華顯六親。","5.6":"此格推來禮義通，一身福祿用無窮；甜酸苦辣皆嚐過，滾滾財源盈而豐。","5.7":"福祿豐盈萬事全，一身榮耀樂天年；名揚威震人爭羨，此世逍遙宛似仙。","5.8":"平生衣食自然來，名利雙全富貴偕；金榜題名登甲第，紫袍玉帶走金階。","5.9":"細推此格妙且清，必定才高惹人欽；甲第之中應有分，揚鞭走馬顯威榮。","6.0":"一朝金榜快題名，顯祖榮宗大器成；衣祿定然無欠缺，田園財帛更豐盈。","6.1":"不作朝中金榜客，定為世上大財翁；聰明天付經書熟，名顯高褂自是榮。","6.2":"此命生來福不窮，讀書必定顯親宗；紫衣玉帶為卿相，富貴榮華孰與同。","6.3":"命主為官福祿長，得來富貴實非常；名題雁塔傳金榜，大顯門庭天下揚。","6.4":"此格威權不可當，紫袍金帶塵高堂；榮華富貴誰能及？萬古留名姓氏揚。","6.5":"細推此命福非輕，富貴榮華孰與爭；定國安邦人極品，威聲顯赫震寰瀛。","6.6":"此格人間一福人，堆金積玉滿堂春；從來富貴有天定，金榜題名更顯親。","6.7":"此命生來福自宏，田園家業最高隆；平生衣祿盈豐足，一路榮華萬事通。","6.8":"富貴由天莫苦求，萬事家計不須謀；十年不比前番事，祖業根基千古留。","6.9":"君是人間福祿星，一生富貴眾人欽；總然衣祿由天定，安享榮華過一生。","7.0":"此命推來福不輕，何須愁慮苦勞心；榮華富貴已天定，正笏垂紳拜紫宸。","7.1":"此命生成大不同，公侯卿相在其中；一生自有逍遙福，富貴榮華極品隆。","7.2":"此命推來天下隆，必定人間一主公；富貴榮華數不盡，定為乾坤一蛟龍。"};
+const FEMALE={"2.1":"生身此命運不通，烏雲蓋月黑朦朧；莫向故園載花木，可來幽地種青松。","2.2":"女命孤冷獨淒身，此身推來路乞人；操心煩惱難度日，一生痛苦度光陰。","2.3":"女命生來輕薄人，營謀事作難稱心；六親骨肉亦無靠，奔走勞碌困苦門。","2.4":"女命推來福祿無，治家艱難辛苦多；丈夫兒女不親愛，奔走他鄉作游姑。","2.5":"此命一身八字低，家庭艱辛多苦妻；娘家親友冷如炭，一生勤勞多憂眉。","2.6":"平生依祿但苦求，兩次配夫帶憂愁；鹹酸苦辣他償過，晚年衣食本無憂。","2.7":"此格做事單獨強，難告夫君作主張；心問口來口問心，晚景衣祿宜自生。","2.8":"女命生來八字輕，為善作事也無因；你把別人當親生，別人對你假殷情。","2.9":"花支艷來硬性身，自奔自力不求人；若問求財方可止，在苦有甜度光陰。","3.0":"女命推來比郎強，婚姻大事礙無障；中年走過坎坷地，末年漸經行前強。","3.1":"早年行運在忙頭，勞碌奔波苦勤求；費力勞心把家立，後來晚景名憂愁。","3.2":"時逢運來帶吉神，從有凶星轉灰塵；真變假來假成真，結拜弟妹當親生。","3.3":"初限命中有變化，中年可比樹落花；勤儉持家難度日，晚年成業享榮華。","3.4":"矮巴勾棗難撈枝，看破紅塵最相宜；謀望求財空費力，婚姻三娶兩次離。","3.5":"女子走冰怕冰薄，出行交易受殘霜；婚姻周郎休此意，官司口舌須相加。","3.6":"憂愁常鎖兩眉頭，千辛萬苦受煎熬；女命交陣休更言，此交定見剝脫愁。","3.7":"此命推來費難營，作事費力又心清；任憑勞苦難積財，也為兒女白了頭。","3.8":"鳳鳴岐山四方揚，女命逢此大吉昌；走失夫君音信有，晚年衣祿財盈箱。","3.9":"女命推來運未能，勞碌奔波一場空；好似俊鳥在籠鎖，中年未限淒秋風。","4.0":"目前月令運不良，千辛萬苦受煎熬；女身受得多苦難，晚年福祿比密甜。","4.1":"此命推來一般艱，女子為人很非凡；中年逍遙多自在，晚年更比中年超。","4.2":"此命推來一般般，女子為人很非凡；中年逍遙多自在，晚年更比中年強。","4.3":"推車靠涯道路通，女名求財也無窮；婚姻出配無阻礙，疾病口舌離身躬。","4.4":"夜夢金銀醒來空，立志謀業運不通；婚姻難成交易散，夫君趟失未見蹤。","4.5":"女命終身駁雜多，六親骨肉不相助；命中男女都難養，勞碌辛苦還奔波。","4.6":"孤舟行水離沙灘，離鄉出外早過家；是非口舌皆無礙，婚姻合配紫微房。","4.7":"時來運轉帶來好，枯木逢春正得青；待得初年交運過，自然晚景見豐亨。","4.8":"時來運轉吉氣發，多年枯木又開花；枝葉重生多茂盛，凡人見了凡人誇。","4.9":"一朵鮮花鏡中開，看著極好取不來；勸你休把鏡花想，女命推業主可怪。","5.0":"此命推來福不輕，女子隨君顯門庭；容貌美滿熱人愛，銀錢富足過一生。","5.1":"肥羊一群入出場，防虎逢之把口張；適口充飢心歡喜，女命八字大吉昌。","5.2":"順風行舟扯起帆，上天又助一順風；不用費力逍遙去，任意順行大享通。","5.3":"此命相貌眉目清，文武雙全功名成；一生衣祿皆無缺，可算世上積福人。","5.4":"運開滿腹好文章，謀事求財大吉祥；出行交易多得穩，到處享通姓名揚。","5.5":"發政施仁志量高，女命求財任逍遙；交接上下人爭羨，推君方算福祿全。","5.6":"明珠輝吐離埃來，女命口角消散開；走失郎君當兩歸，交易有成楚見財。","5.7":"游魚戲水被網驚，踴躍奔走震驚人；宏圖如虎風雲動，交接上下福自生。","5.8":"此命推來轉悠悠，時運交來總無愁；平生不需生愁病，必定晚景無憂愁。","5.9":"雨雪載途泥濘天，交易謀事總不然；疾病口舌皆散退，晚來富貴似樂天。","6.0":"女命生來帶吉神，生逢吉地遇貴人；行事作為多顯達，平生衣祿自崢嶸。","6.1":"女命生來顯耀宗，女郎做事不平庸；四海聞名名遠震，金銀富貴過一生。","6.2":"指日高升氣象新，走失待人有信音；好命遇事遂心好，伺病口舌皆除根。","6.3":"五官脫運難抬頭，婦命須當把財求；交易少行有人助，一生衣祿不須愁。","6.4":"俊鳥曾得出朧中，脫離為難顯威風；一朝得意福力至，東南西北任意通。","6.5":"女命推來福非輕，茲善為事受人敬；天降文王開基業，八百年來富貴門。","6.6":"時來運轉自然寬，女命生來好自閒；走失出走有消息，交易婚嫁自如意。","6.7":"此命生來總平安，福祿自來樂天年；出外經營百事吉，女郎受職作高官。","6.8":"此日生來作財翁，交易順暢利息濃；婚姻不須生愁病，求謀諸事總如意。","6.9":"太公封神不非凡，女命求財穩如山；交接雙雙稱意好，出外百事總如心。","7.0":"本命推來祿厚豐，交易出行總皆隆；女命富貴雙全好，必定福壽永無窮。","7.1":"此命推來宏圖大，女命生來勝男強；事業亨通財源廣，安享榮華度一生。"};
+
+// ── 工具函數 ───────────────────────────────────────
+function toStr(q){const l=Math.floor(q/10),r=q%10;if(l===0)return`${r}錢`;if(r===0)return`${l}兩`;return`${l}兩${r}錢`;}
+function toKey(q){return`${Math.floor(q/10)}.${q%10}`;}
+
+// ── 狀態 ───────────────────────────────────────────
+let gender='female', selSC=null;
+
+// ── 初始化下拉選單 ──────────────────────────────────
+(function init(){
+  const yr=document.getElementById('sel-year');
+  for(let y=1950;y<=2029;y++){const o=document.createElement('option');o.value=y;o.textContent=y+'年';yr.appendChild(o);}
+  yr.value=1980; // 預設1980，非特定人
+
+  const mo=document.getElementById('sel-month');
+  for(let m=1;m<=12;m++){const o=document.createElement('option');o.value=m;o.textContent=m+'月';mo.appendChild(o);}
+  mo.value=1;
+
+  const dy=document.getElementById('sel-day');
+  for(let d=1;d<=30;d++){const o=document.createElement('option');o.value=d;o.textContent=d+'日';dy.appendChild(o);}
+  dy.value=1;
+
+  // 時辰格
+  const grid=document.getElementById('shichen-grid');
+  SHICHEN.forEach(s=>{
+    const b=document.createElement('button');
+    b.className='sc-btn';
+    b.dataset.dz=s.d;
+    b.innerHTML=`<div class="sc-name">${s.n}</div><div class="sc-range">${s.r}</div>`;
+    b.onclick=()=>selectSC(s.d);
+    grid.appendChild(b);
+  });
+  // 預設不選任何時辰
+})();
+
+function setGender(g){
+  gender=g;
+  document.getElementById('btn-f').className='gender-btn'+(g==='female'?' active-f':'');
+  document.getElementById('btn-m').className='gender-btn'+(g==='male'?' active-m':'');
+}
+
+function selectSC(dz){
+  selSC=dz;
+  document.querySelectorAll('.sc-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.dz===dz);
+  });
+}
+
+function showErr(msg){
+  const el=document.getElementById('err-msg');
+  el.textContent=msg; el.style.display=msg?'block':'none';
+}
+
+function calc(){
+  showErr('');
+  if(!selSC){showErr('請選擇出生時辰');return;}
+  const y=+document.getElementById('sel-year').value;
+  const m=+document.getElementById('sel-month').value;
+  const d=+document.getElementById('sel-day').value;
+  const gz=getGZ(y);
+  if(!gz){showErr('年份超出範圍（1950–2029）');return;}
+  const yw=YW[gz],mw=MW[m],dw=DW[d],hw=HW[selSC];
+  if(yw==null||!mw||!dw||!hw){showErr('資料錯誤，請確認輸入');return;}
+  const total=yw+mw+dw+hw;
+  const key=toKey(total);
+  const poem=(gender==='male'?MALE:FEMALE)[key]||'（查無對應詩文）';
+
+  // 顯示結果
+  document.getElementById('result-section').style.display='block';
+  document.getElementById('r-meta').textContent=`${gz}年　農曆${m}月${d}日　${selSC}時`;
+  document.getElementById('r-total').textContent=toStr(total);
+  document.getElementById('r-poem').textContent=poem;
+
+  const det=document.getElementById('r-detail');
+  det.innerHTML=[
+    {l:`年份（${gz}）`,v:yw},{l:`農曆${m}月`,v:mw},{l:`農曆${d}日`,v:dw},{l:`${selSC}時`,v:hw}
+  ].map(({l,v})=>`<div class="detail-row"><span class="detail-lbl">${l}</span><span class="detail-val">${toStr(v)}</span></div>`).join('')
+  +`<div class="detail-row"><span class="detail-total-lbl">合計</span><span class="detail-total-val">${toStr(total)}</span></div>`;
+
+  document.getElementById('r-expl').innerHTML='<div class="loading"><div class="spin">⏳</div><p>命理師解讀中...</p></div>';
+  document.getElementById('result-section').scrollIntoView({behavior:'smooth'});
+
+  // 呼叫 API
+  const gTxt=gender==='male'?'男性':'女性';
+  const prompt=`你是精通袁天罡稱骨算命的命理師，用溫暖正向現代白話語氣解說。\n\n命主：${gTxt}，${gz}年，農曆${m}月${d}日，${selSC}時，骨重${toStr(total)}（${key}兩）\n原文：「${poem}」\n\n請依4段回答（各60–80字）：\n1.【整體命格】此骨重代表什麼樣的人生基調？\n2.【事業財運】現代職場特質與財富緣分？\n3.【感情人際】感情、家庭、人際關係走向？\n4.【晚年建議】整體走勢與給命主的一句鼓勵。\n\n語氣正向，避免恐嚇，強調後天努力可改變命運。`;
+
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  }).then(r=>r.json()).then(data=>{
+    const txt=data.content?.find(b=>b.type==='text')?.text||'解說生成失敗，請稍後再試。';
+    document.getElementById('r-expl').innerHTML=`<div class="expl">${txt.replace(/</g,'&lt;')}</div>`;
+  }).catch(()=>{
+    document.getElementById('r-expl').innerHTML='<div class="expl">網路錯誤，無法取得解說。</div>';
+  });
+}
+</script>
+</body>
+</html>
